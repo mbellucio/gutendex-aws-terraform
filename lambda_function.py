@@ -46,7 +46,7 @@ def lambda_handler(event, context):
         parquet_buffer = io.BytesIO()
         clean_df.to_parquet(parquet_buffer, index=False, compression='snappy')
         
-        bucket_name = 'gutendex'
+        bucket_name = 'gutendex-bucket'
         folder_name = 'data'
         object_key = f'{folder_name}/data.parquet'
         
