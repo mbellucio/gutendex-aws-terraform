@@ -13,3 +13,9 @@ module "compute" {
   lambda_role = var.lambda_role
   lambda_layer = var.lambda_layer
 }
+
+module "storage" {
+  source = "./module/storage"
+  bucket_name = "gutendex-bucket"
+}
+
