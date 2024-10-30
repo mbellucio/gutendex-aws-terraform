@@ -17,5 +17,6 @@ module "compute" {
 module "storage" {
   source = "./module/storage"
   bucket_name = "gutendex-bucket"
+  database_name = "glue-gutendex-db"
 }
 

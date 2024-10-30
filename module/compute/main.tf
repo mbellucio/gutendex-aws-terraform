@@ -13,4 +13,5 @@ resource "aws_lambda_function" "gutendex-lambda" {
   layers = [var.lambda_layer]
 
   source_code_hash = filebase64sha256("./lambda_function.zip")
-}
+} 
+
