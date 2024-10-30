@@ -1,7 +1,5 @@
-variable "bucket_name" {
-  description = "Name of the S3 bucket"
-  type        = string
-}
+variable "bucket_name" {}
+variable "database_name" {}
 
 resource "aws_s3_bucket" "storage" {
   bucket = var.bucket_name
@@ -12,3 +10,10 @@ resource "aws_s3_bucket" "storage" {
 
   force_destroy = true
 }
+
+resource "aws_glue_catalog_database" "gutendex_db" {
+  name          = var.database_name
+  description   = "Glue database"
+  location_uri  = "s3://${var.bucket_name}/database"
+}
+
