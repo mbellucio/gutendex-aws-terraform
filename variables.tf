@@ -10,12 +10,16 @@ variable "crawler_role" {
   default = "arn:aws:iam::676206933182:role/AWSGlueAccess"
 }
 
+variable "step_function_role" {
+  default = "arn:aws:iam::676206933182:role/service-role/StepFunctions-MyStateMachine-hqoodi2ss-role-dxb9lhpxn"
+}
+
 variable "bucket_name" {
   default = "gutendex-bucket"
 }
 
 variable "database_name" {
-  default = "glue-gutendex-db"
+  default = "glue_gutendex_db"
 }
 
 variable "crawler_name" {

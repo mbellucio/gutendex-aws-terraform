@@ -16,6 +16,7 @@ module "compute" {
   database_name = var.database_name
   crawler_name = var.crawler_name
   crawler_role = var.crawler_role
+  step_function_role = var.step_function_role
 }
 
 module "storage" {
