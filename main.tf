@@ -15,7 +15,7 @@ module "compute" {
   bucket_name = var.bucket_name
   database_name = var.database_name
   crawler_name = var.crawler_name
-  crawler_role = var.crawler_role
+  glue_crawler_role_arn = module.security.glue_crawler_role_arn
   step_function_role = var.step_function_role
 }
 
@@ -31,4 +31,6 @@ module "security" {
 
   lambda_role_name = var.lambda_role_name
   bucket_name = var.bucket_name
+  glue_crawler_role_name = var.glue_crawler_role_name
+  database_name = var.database_name
 }

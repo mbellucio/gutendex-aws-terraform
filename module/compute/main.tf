@@ -1,10 +1,10 @@
 variable "lambda_layer" {}
+variable "lambda_role_arn" {}
 variable "bucket_name" {}
 variable "database_name" {}
 variable "crawler_name" {}
-variable "crawler_role" {}
+variable "glue_crawler_role_arn" {}
 variable "step_function_role" {}
-variable "lambda_role_arn" {}
 
 resource "aws_lambda_function" "gutendex-lambda" {
   filename      = "lambda_function.zip"
@@ -23,7 +23,7 @@ resource "aws_lambda_function" "gutendex-lambda" {
 resource "aws_glue_crawler" "example_crawler" {
   database_name = var.database_name
   name          = var.crawler_name
-  role          = var.crawler_role
+  role          = var.glue_crawler_role_arn
 
   s3_target {
     path = "s3://${var.bucket_name}/data"
