@@ -10,7 +10,7 @@ terraform {
 module "compute" {
   source = "./module/compute"
 
-  lambda_role = var.lambda_role
+  lambda_role_arn = module.security.lambda_role_arn
   lambda_layer = var.lambda_layer
   bucket_name = var.bucket_name
   database_name = var.database_name
@@ -21,7 +21,14 @@ module "compute" {
 
 module "storage" {
   source = "./module/storage"
+
   bucket_name = var.bucket_name
   database_name = var.database_name
 }
 
+module "security" {
+  source = "./module/security"
+
+  lambda_role_name = var.lambda_role_name
+  bucket_name = var.bucket_name
+}

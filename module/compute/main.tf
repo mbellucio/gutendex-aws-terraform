@@ -1,17 +1,17 @@
-variable "lambda_role" {}
 variable "lambda_layer" {}
 variable "bucket_name" {}
 variable "database_name" {}
 variable "crawler_name" {}
 variable "crawler_role" {}
 variable "step_function_role" {}
+variable "lambda_role_arn" {}
 
 resource "aws_lambda_function" "gutendex-lambda" {
   filename      = "lambda_function.zip"
   function_name = "gutendex-lambda"
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.11"
-  role          = var.lambda_role
+  role          = var.lambda_role_arn
 
   timeout = 900
 
@@ -40,7 +40,7 @@ resource "aws_glue_crawler" "example_crawler" {
 }
 
 resource "aws_sfn_state_machine" "gutendex_step_function" {
-  name     = "gutendex-ste-function"
+  name     = "gutendex-step-function"
   role_arn = var.step_function_role
 
   definition = jsonencode(jsondecode(<<EOF

@@ -25,3 +25,7 @@ variable "database_name" {
 variable "crawler_name" {
   default = "gutendex-glue-crawler"
 }
+
+variable "lambda_role_name" {
+  default = "gutendex-lambda-s3-access"
+}
