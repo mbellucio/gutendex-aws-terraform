@@ -39,3 +39,9 @@ module "security" {
   step_function_role_name = var.step_function_role_name
   lambda_function_arn = module.compute.lambda_function_arn
 }
+
+module "eventbridge" {
+  source = "./module/eventbridge" 
+  
+  step_function_arn = module.compute.step_function_arn
+}
