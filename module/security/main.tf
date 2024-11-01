@@ -298,11 +298,6 @@ resource "aws_iam_policy" "athena_output_bucket_policy" {
   })
 }
 
-# resource "aws_iam_role_policy_attachment" "lambda_athena_output_attach" {
-#   role       = aws_iam_role.lambda_role.name
-#   policy_arn = aws_iam_policy.athena_output_bucket_policy.arn
-# }
-
 resource "aws_iam_role_policy_attachment" "step_function_athena_output_attach" {
   role       = aws_iam_role.step_function_role.name
   policy_arn = aws_iam_policy.athena_output_bucket_policy.arn
@@ -331,4 +326,8 @@ resource "aws_iam_role_policy_attachment" "step_function_glue_crawler_control_at
 output "step_function_role_arn" {
   value = aws_iam_role.step_function_role.arn
 }
+
+// =====================================
+//             Event Bridge
+// =====================================
 
