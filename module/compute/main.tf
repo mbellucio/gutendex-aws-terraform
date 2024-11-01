@@ -1,17 +1,19 @@
-variable "lambda_role" {}
 variable "lambda_layer" {}
+variable "lambda_role_arn" {}
 variable "bucket_name" {}
 variable "database_name" {}
 variable "crawler_name" {}
-variable "crawler_role" {}
-variable "step_function_role" {}
+variable "glue_crawler_role_arn" {}
+variable "step_function_role_arn" {}
+variable "workgroup_name" {}
+variable "athena_output_location" {}
 
 resource "aws_lambda_function" "gutendex-lambda" {
   filename      = "lambda_function.zip"
   function_name = "gutendex-lambda"
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.11"
-  role          = var.lambda_role
+  role          = var.lambda_role_arn
 
   timeout = 900
 
@@ -20,10 +22,14 @@ resource "aws_lambda_function" "gutendex-lambda" {
   source_code_hash = filebase64sha256("./lambda_function.zip")
 } 
 
+output "lambda_function_arn" {
+  value = aws_lambda_function.gutendex-lambda.arn
+}
+
 resource "aws_glue_crawler" "example_crawler" {
   database_name = var.database_name
   name          = var.crawler_name
-  role          = var.crawler_role
+  role          = var.glue_crawler_role_arn
 
   s3_target {
     path = "s3://${var.bucket_name}/data"
@@ -39,9 +45,22 @@ resource "aws_glue_crawler" "example_crawler" {
   table_prefix = "gutendex_"
 }
 
+resource "aws_athena_workgroup" "gutendex_work_group" {
+  name = var.workgroup_name
+
+  configuration {
+    enforce_workgroup_configuration    = true
+    publish_cloudwatch_metrics_enabled = true
+
+    result_configuration {
+      output_location = var.athena_output_location
+    }
+  }
+}
+
 resource "aws_sfn_state_machine" "gutendex_step_function" {
-  name     = "gutendex-ste-function"
-  role_arn = var.step_function_role
+  name     = "gutendex-step-function"
+  role_arn = var.step_function_role_arn
 
   definition = jsonencode(jsondecode(<<EOF
     {
@@ -53,7 +72,7 @@ resource "aws_sfn_state_machine" "gutendex_step_function" {
           "Resource": "arn:aws:states:::lambda:invoke",
           "OutputPath": "$.Payload",
           "Parameters": {
-            "FunctionName": "arn:aws:lambda:us-east-2:676206933182:function:gutendex-lambda:$LATEST"
+            "FunctionName": "${aws_lambda_function.gutendex-lambda.arn}:$LATEST"
           },
           "Retry": [
             {
@@ -73,7 +92,7 @@ resource "aws_sfn_state_machine" "gutendex_step_function" {
         "StartCrawler": {
           "Type": "Task",
           "Parameters": {
-            "Name": "gutendex-glue-crawler"
+            "Name": "${var.crawler_name}"
           },
           "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
           "Next": "WaitForCrawler"
@@ -87,7 +106,7 @@ resource "aws_sfn_state_machine" "gutendex_step_function" {
           "Type": "Task",
           "Resource": "arn:aws:states:::aws-sdk:glue:getCrawler",
           "Parameters": {
-            "Name": "gutendex"
+            "Name": "${var.crawler_name}"
           },
           "Next": "IsCrawlerComplete?"
         },
@@ -114,7 +133,7 @@ resource "aws_sfn_state_machine" "gutendex_step_function" {
                   "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
                   "Parameters": {
                     "QueryString": "CREATE OR REPLACE VIEW glue_gutendex_db.books_per_author_view AS WITH extracted_authors AS (SELECT author_info.name AS author_name FROM \"glue_gutendex_db\".\"gutendex_data\", UNNEST(authors) AS t (author_info)) SELECT author_name, COUNT(*) AS book_count FROM extracted_authors WHERE author_name IS NOT NULL AND author_name <> '' AND author_name <> 'Various' GROUP BY author_name ORDER BY book_count DESC LIMIT 10;",
-                    "WorkGroup": "primary"
+                    "WorkGroup": "${var.workgroup_name}"
                   },
                   "End": true
                 }
@@ -128,7 +147,7 @@ resource "aws_sfn_state_machine" "gutendex_step_function" {
                   "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
                   "Parameters": {
                     "QueryString": "CREATE OR REPLACE VIEW glue_gutendex_db.most_popular_subjects_view AS WITH extracted_subjects AS (SELECT UPPER(regexp_replace(subject, '[^a-zA-Z0-9 ]', '')) AS cleaned_subject FROM \"glue_gutendex_db\".\"gutendex_data\", UNNEST(subjects) AS t (subject)) SELECT cleaned_subject, COUNT(*) AS subject_count FROM extracted_subjects WHERE cleaned_subject IS NOT NULL AND cleaned_subject <> '' GROUP BY cleaned_subject ORDER BY subject_count DESC LIMIT 10;",
-                    "WorkGroup": "primary"
+                    "WorkGroup": "${var.workgroup_name}"
                   },
                   "End": true
                 }
@@ -142,7 +161,7 @@ resource "aws_sfn_state_machine" "gutendex_step_function" {
                   "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
                   "Parameters": {
                     "QueryString": "CREATE OR REPLACE VIEW glue_gutendex_db.most_downloaded_books_view AS SELECT title, download_count FROM \"glue_gutendex_db\".\"gutendex_data\" ORDER BY download_count DESC LIMIT 10;",
-                    "WorkGroup": "primary"
+                    "WorkGroup": "${var.workgroup_name}"
                   },
                   "End": true
                 }
@@ -155,3 +174,5 @@ resource "aws_sfn_state_machine" "gutendex_step_function" {
 EOF
 ))
 }
+
+

@@ -1,17 +1,9 @@
-variable "lambda_role" {
-  default = "arn:aws:iam::676206933182:role/service-role/gutendex-role-eqe9wn7d"
-}
-
 variable "lambda_layer" {
   default = "arn:aws:lambda:us-east-2:336392948345:layer:AWSSDKPandas-Python311:17"
 } 
 
-variable "crawler_role" {
-  default = "arn:aws:iam::676206933182:role/AWSGlueAccess"
-}
-
-variable "step_function_role" {
-  default = "arn:aws:iam::676206933182:role/service-role/StepFunctions-MyStateMachine-hqoodi2ss-role-dxb9lhpxn"
+variable "step_function_role_name" {
+  default = "gutendex-step-function-access"
 }
 
 variable "bucket_name" {
@@ -24,4 +16,20 @@ variable "database_name" {
 
 variable "crawler_name" {
   default = "gutendex-glue-crawler"
+}
+
+variable "lambda_role_name" {
+  default = "gutendex-lambda-s3-access"
+}
+
+variable "glue_crawler_role_name" {
+  default = "gutendex-crawler-s3-glue-access"
+}
+
+variable "workgroup_name" {
+  default = "gutendex-wg"
+}
+
+variable "athena_output_location" {
+  default = "s3://gutendex-bucket/athena"
 }
